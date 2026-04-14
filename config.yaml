@@ -1,0 +1,35 @@
+applications:
+  learning_log:
+    type: python:3.12
+    web:
+      commands:
+        start: "gunicorn --bind 0.0.0.0:$PORT learning_log.wsgi:application"
+      locations:
+        "/":
+          passthru: true
+        "/static/":
+          root: "static"
+          expires: 1h
+          allow: true
+    build:
+      flavor: none
+      dependencies:
+        python:
+          - gunicorn
+          - whitenoise
+    disk: 512
+    mounts:
+      "media/": { source: local, source_path: media }
+
+services:
+  database:
+    type: postgresql:16
+    disk: 512
+
+routes:
+  "https://{default}/":
+    type: upstream
+    upstream: "learning_log:http"
+  "https://{default}/static/":
+    type: upstream
+    upstream: "learning_log:http"
