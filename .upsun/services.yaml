@@ -1,9 +1,0 @@
-# The services of the project.
-#
-# Each service listed will be deployed
-# to power your Upsun (formerly Platform.sh) project.
-# More information: https://docs.upsun.com/services/
-# Full list of available services: https://docs.upsun.com/services/available/
-postgresql:
-  type: postgresql:18 # All available versions are: 18, 17, 16, 15, 14, 13, 12
-  disk: 1024 # All available sizes are: 1024, 2048, 3072, 4096, 5120

@@ -1,18 +1,18 @@
-"name: app" 
-"type: \"python:3.11\"" 
-"" 
-"relationships:" 
+name: app 
+type: "python:3.11" 
+ 
+relationships: 
 "    database: \"db:postgresql\"" 
-"" 
-"hooks:" 
+ 
+hooks: 
 "    build: |" 
 "        pip install --upgrade pip" 
 "        pip install -r requirements.txt" 
 "        python manage.py collectstatic --no-input" 
 "    deploy: |" 
 "        python manage.py migrate" 
-"" 
-"web:" 
+ 
+web: 
 "    upstream:" 
 "        socket_family: unix" 
 "    commands:" 
@@ -25,10 +25,5 @@
 "            root: \"static\"" 
 "            expires: 1h" 
 "            allow: true" 
-"" 
-"disk: 2048" 
-"" 
-"services:" 
-"    db:" 
-"        type: postgresql:15" 
-"        disk: 1024" 
+ 
+disk: 2048 
