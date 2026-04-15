@@ -1,9 +1,14 @@
-# Each route describes how an incoming URL will be processed by Platform.sh.
-
+# The routes of the project.
+#
+# Each route describes how an incoming URL is going
+# to be processed by Upsun (formerly Platform.sh).
+# More information: https://docs.upsun.com/routes/
 "https://{default}/":
-    type: upstream
-    upstream: "ll_project:http"
+  type: upstream
+  upstream: "learning_logs:http"
 
-"https://www.{default}/":
-    type: redirect
-    to: "https://{default}/"
+# A basic redirect definition
+# More information: https://docs.upsun.com/routes/examples/redirect/
+"https://www.{default}":
+  type: redirect
+  to: "https://{default}/"

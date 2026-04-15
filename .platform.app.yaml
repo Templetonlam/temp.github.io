@@ -1,41 +1,127 @@
-name: "ll_project"
-type: "python:3.10"
+# Complete list of all available properties: https://docs.upsun.com/app/reference/
 
+# A unique name for the app. Must be lowercase alphanumeric characters. Changing the name destroys data associated
+# with the app.
+name: "learning_logs"
+
+# The runtime the application uses.
+# Complete list of available runtimes: https://docs.upsun.com/app/reference/type/
+type: "python:3.13"
+
+# How many resources to devote to the app. Defaults to AUTO in production environments.
+# More information: https://docs.upsun.com/app/reference/sizes/
+# size:
+
+# The relationships of the application with services or other applications.
+# The left-hand side is the name of the relationship as it will be exposed
+# to the application in the PLATFORM_RELATIONSHIPS variable. The right-hand
+# side is in the form `<service name>:<endpoint name>`.
+# More information: https://docs.upsun.com/app/reference/relationships/
 relationships:
-    database: "db:postgresql"
+  postgresql:
+  
 
-# The configuration of the app when it's exposed to the web.
+# The size of the persistent disk of the application (in MB). Minimum value is 128.
+# disk: 512
+
+# Mounts define directories that are writable after the build is complete. If set as a local source, disk property is required.
+# More information: https://docs.upsun.com/app/reference/mounts/
+# mounts:
+#   "/.cache": # Represents the path in the app.
+#     source: "local" # "local" sources are unique to the app, while "service" sources can be shared among apps.
+#     source_path: "cache" # The subdirectory within the mounted disk (the source) where the mount should point.
+
+# The web key configures the web server running in front of your app.
+# More information: https://docs.upsun.com/app/reference/web/
 web:
-    upstream:
-        socket_family: unix
-    commands:
-        start: "gunicorn -w 4 -b unix:$SOCKET ll_project.wsgi:application"
-    locations:
-        "/":
-            passthru: true
-        "/static":
-            root: "static"
-            expires: 1h
-            allow: true
+  # Commands are run once after deployment to start the application process.
+  # More information: https://docs.upsun.com/app/reference/web/commands/
+  commands:
+    # The command to launch your app. If it terminates, it’s restarted immediately.
+    # You can use the $PORT or the $SOCKET environment variable depending on the socket family of your upstream
+    start: "gunicorn --pythonpath=. -b unix:$SOCKET ..wsgi --log-file -"
+  # You can listen to a UNIX socket (unix) or a TCP port (tcp, default).
+  # Whether your app should speak to the webserver via TCP or Unix socket. Defaults to tcp
+  # More information: https://docs.upsun.com/app/reference/web/upstream/socket-family/
+  upstream:
+    # Whether your app should speak to the webserver via TCP or Unix socket. Defaults to tcp
+    # More information: https://docs.upsun.com/app/reference/web/upstream/socket-family/
+    socket_family: unix
+  # Each key in locations is a path on your site with a leading /.
+  # More information: https://docs.upsun.com/app/reference/web/locations/
+  locations:
+    "/":
+      passthru: true
+      
+    "/static":
+      allow: true
+      expires: "1h"
+      root: "static"
+      
+    
 
-# The size of the persistent disk of the application (in MB).
-disk: 512
+# Alternate copies of the application to run as background processes.
+# More information: https://docs.upsun.com/app/reference/workers/
+# workers:
 
-# Set a local read/write mount for logs.
-mounts:
-    "logs":
-        source: local
-        source_path: logs
+# The timezone for crons to run. Format: a TZ database name. Defaults to UTC, which is the timezone used for all logs
+# no matter the value here. More information: https://docs.upsun.com/app/timezone/
+# timezone: <time-zone>
 
-# The hooks executed at various points in the lifecycle of the application.
+# Access control for roles accessing app environments.
+# More information: https://docs.upsun.com/app/reference/access/
+# access:
+
+# Variables to control the environment. More information: https://docs.upsun.com/app/reference/variables/
+# variables:
+#   env:
+#     # Add environment variables here that are static.
+#     PYTHONUNBUFFERED: "1"
+
+# Outbound firewall rules for the application. More information: https://docs.upsun.com/app/reference/firewall/
+# firewall:
+
+# Specifies a default set of build tasks to run. Flavors are language-specific.
+# More information: https://docs.upsun.com/app/reference/build/
+build:
+  flavor: none
+
+# Installs global dependencies as part of the build process. They’re independent of your app’s dependencies and
+# are available in the PATH during the build process and in the runtime environment. They’re installed before
+# the build hook runs using a package manager for the language.
+# More information: https://docs.upsun.com/app/reference/dependencies/
+# dependencies:
+#   python3: # Specify one Python 3 package per line.
+#     numpy: '*'
+
+# Hooks allow you to customize your code/environment as the project moves through the build and deploy stages
+# More information: https://docs.upsun.com/app/reference/hooks/
 hooks:
-    build: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements_remote.txt
-        
-        mkdir logs
-        python manage.py collectstatic
-        rm -rf logs
-    deploy: |
-        python manage.py migrate
+  # The build hook is run after any build flavor.
+  # More information: https://docs.upsun.com/app/hooks/compare/compare/build/
+  build: |
+    set -eux
+    pip install -r requirements.txt
+    # Collect static files so that they can be served by Upsun (formerly Platform.sh)
+    python manage.py collectstatic --noinput
+    
+  # The deploy hook is run after the app container has been started, but before it has started accepting requests.
+  # More information: https://docs.upsun.com/app/hooks/compare/compare/deploy/
+  deploy: |
+    set -eux
+    python manage.py migrate
+    
+
+  # The post_deploy hook is run after the app container has been started and after it has started accepting requests.
+  # More information: https://docs.upsun.com/app/hooks/compare/compare/post-deploy/
+  # post_deploy: |
+
+# Scheduled tasks for the app.
+# More information: https://docs.upsun.com/app/reference/crons/
+# crons:
+
+# Customizations to your PHP or Lisp runtime. More information: https://docs.upsun.com/app/reference/runtime/
+# runtime:
+
+# More information: https://docs.upsun.com/app/reference/additional-hosts/
+# additional_hosts:
